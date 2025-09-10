@@ -115,3 +115,22 @@ function greetUser(name) {
   return `Hello, ${name}! Welcome to the Test Repository.`;
 }
 ```
+
+## GitHub Pages
+
+This repository has a GitHub Pages website that provides a user-friendly interface to explore the repository's content.
+
+To view the website, visit: [https://kateleonovaqa.github.io/test/](https://kateleonovaqa.github.io/test/)
+
+The website includes:
+- **Home Page**: Overview of the repository
+- **Documentation**: Details about the documentation files
+- **Sample Code**: Showcase of the sample JavaScript code
+
+To enable GitHub Pages for this repository:
+1. Go to the repository on GitHub
+2. Click on &quot;Settings&quot;
+3. Scroll down to the &quot;GitHub Pages&quot; section
+4. Under &quot;Source&quot;, select &quot;main branch&quot; and &quot;/docs&quot; folder
+5. Click &quot;Save&quot;
+
