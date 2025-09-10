@@ -1,0 +1,33 @@
+# Ignore compiled files
+*.class
+*.o
+*.so
+*.dll
+
+# Ignore logs and databases
+*.log
+*.sql
+*.sqlite
+
+# Ignore OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Ignore IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Ignore node modules
+node_modules/
+
+# Ignore build directories
+build/
+dist/
+
