@@ -81,3 +81,23 @@ This repository has been set up with the following structure:
 - **README1.md** - Supplementary documentation
 - **SECURITY.md** - Security policies and vulnerability reporting procedures
 
+
+## Sample Code
+
+This repository includes sample JavaScript code to demonstrate basic functionality:
+
+### File Structure
+
+- **src/index.js** - Contains basic functions and exports
+- **src/test.js** - Simple tests for the functions in index.js
+
+### Running the Code
+
+To run the sample code:
+
+
+
+### Example Function
+
+Hello, ! Welcome to the Test Repository.
+
