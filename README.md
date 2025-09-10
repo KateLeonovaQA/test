@@ -67,3 +67,17 @@ This project is open source and available under the [MIT License](LICENSE).
 ---
 
 *Last updated: September 5, 2025*
+## Repository Structure
+
+This repository has been set up with the following structure:
+
+- **.github/ISSUE_TEMPLATE/** - Templates for standardized issue reporting
+- **.github/workflows/ci.yml** - GitHub Actions workflow for continuous integration
+- **.gitignore** - Specifies files that Git should ignore
+- **CODE_OF_CONDUCT.md** - Guidelines for community behavior and standards
+- **CONTRIBUTING.md** - Guidelines for how others can contribute to this project
+- **LICENSE** - MIT License defining how others can use this code
+- **README.md** - This file - main documentation
+- **README1.md** - Supplementary documentation
+- **SECURITY.md** - Security policies and vulnerability reporting procedures
+
