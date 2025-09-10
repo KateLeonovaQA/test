@@ -67,6 +67,7 @@ This project is open source and available under the [MIT License](LICENSE).
 ---
 
 *Last updated: September 5, 2025*
+
 ## Repository Structure
 
 This repository has been set up with the following structure:
@@ -95,7 +96,16 @@ This repository includes sample JavaScript code to demonstrate basic functionali
 
 To run the sample code:
 
+```bash
+# Install dependencies (if any)
+npm install
 
+# Run the main code
+npm start
+
+# Run tests
+npm test
+```
 
 ### Example Function
 
@@ -105,4 +115,3 @@ function greetUser(name) {
   return `Hello, ${name}! Welcome to the Test Repository.`;
 }
 ```
-
