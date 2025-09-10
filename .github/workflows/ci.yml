@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '16'
+
+    - name: Install dependencies
+      run: |
+        echo &quot;Installing dependencies...&quot;
+        # Add your dependency installation commands here
+        # For example: npm install
+
+    - name: Run tests
+      run: |
+        echo &quot;Running tests...&quot;
+        # Add your test commands here
+        # For example: npm test
+
+    - name: Lint code
+      run: |
+        echo &quot;Linting code...&quot;
+        # Add your linting commands here
+        # For example: npm run lint
+
+    - name: Build
+      run: |
+        echo &quot;Building project...&quot;
+        # Add your build commands here
+        # For example: npm run build
+
+    - name: Notify on success
+      if: success()
+      run: echo &quot;CI pipeline completed successfully!&quot;
+
+    - name: Notify on failure
+      if: failure()
+      run: echo &quot;CI pipeline failed!&quot;
+
