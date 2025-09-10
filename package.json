@@ -1,0 +1,26 @@
+{
+  &quot;name&quot;: &quot;test-repository&quot;,
+  &quot;version&quot;: &quot;1.0.0&quot;,
+  &quot;description&quot;: &quot;A test repository for demonstration purposes&quot;,
+  &quot;main&quot;: &quot;src/index.js&quot;,
+  &quot;scripts&quot;: {
+    &quot;start&quot;: &quot;node src/index.js&quot;,
+    &quot;test&quot;: &quot;node src/test.js&quot;
+  },
+  &quot;repository&quot;: {
+    &quot;type&quot;: &quot;git&quot;,
+    &quot;url&quot;: &quot;git+https://github.com/KateLeonovaQA/test.git&quot;
+  },
+  &quot;keywords&quot;: [
+    &quot;test&quot;,
+    &quot;demo&quot;,
+    &quot;example&quot;
+  ],
+  &quot;author&quot;: &quot;KateLeonovaQA&quot;,
+  &quot;license&quot;: &quot;MIT&quot;,
+  &quot;bugs&quot;: {
+    &quot;url&quot;: &quot;https://github.com/KateLeonovaQA/test/issues&quot;
+  },
+  &quot;homepage&quot;: &quot;https://github.com/KateLeonovaQA/test#readme&quot;
+}
+
