@@ -99,5 +99,10 @@ To run the sample code:
 
 ### Example Function
 
-Hello, ! Welcome to the Test Repository.
+```javascript
+// Simple function to greet a user
+function greetUser(name) {
+  return `Hello, ${name}! Welcome to the Test Repository.`;
+}
+```
 
