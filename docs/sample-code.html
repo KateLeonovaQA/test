@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang=&quot;en&quot;>
+<head>
+    <meta charset=&quot;UTF-8&quot;>
+    <meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;>
+    <title>Test Repository - Sample Code</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            background-color: #f4f4f4;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        h1 {
+            color: #0366d6;
+        }
+        h2 {
+            color: #0366d6;
+            border-bottom: 1px solid #eaecef;
+            padding-bottom: 0.3em;
+        }
+        code {
+            background-color: #f6f8fa;
+            padding: 0.2em 0.4em;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+        pre {
+            background-color: #f6f8fa;
+            padding: 16px;
+            border-radius: 6px;
+            overflow: auto;
+            font-family: monospace;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+        }
+        footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 0.8em;
+            color: #777;
+        }
+        .emoji {
+            font-size: 1.2em;
+        }
+        a {
+            color: #0366d6;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .nav {
+            background-color: #24292e;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .nav a {
+            color: white;
+            margin-right: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class=&quot;nav&quot;>
+        <a href=&quot;index.html&quot;>Home</a>
+        <a href=&quot;https://github.com/KateLeonovaQA/test&quot;>GitHub</a>
+        <a href=&quot;documentation.html&quot;>Documentation</a>
+        <a href=&quot;sample-code.html&quot;>Sample Code</a>
+    </div>
+
+    <header>
+        <h1>Sample Code</h1>
+        <p>Example JavaScript code included in the Test Repository</p>
+    </header>
+
+    <div class=&quot;container&quot;>
+        <h2>Sample JavaScript Code</h2>
+        <p>This repository includes sample JavaScript code to demonstrate basic functionality.</p>
+
+        <h3>File Structure</h3>
+        <ul>
+            <li><strong>src/index.js</strong> - Contains basic functions and exports</li>
+            <li><strong>src/test.js</strong> - Simple tests for the functions in index.js</li>
+        </ul>
+
+        <h3>Running the Code</h3>
+        <p>To run the sample code:</p>
+        <pre>
+# Install dependencies (if any)
+npm install
+
+# Run the main code
+npm start
+
+# Run tests
+npm test</pre>
+
+        <h3>index.js</h3>
+        <pre>/**
+ * Sample JavaScript file demonstrating basic functionality
+ * 
+ * This file contains a simple example of JavaScript code that can be used
+ * as a starting point for development.
+ */
+
+// Simple function to greet a user
+function greetUser(name) {
+  return ;
+}
+
+// Function to calculate the sum of two numbers
+function add(a, b) {
+  return a + b;
+}
+
+// Example of using the functions
+function runExample() {
+  const userName = 'Developer';
+  const greeting = greetUser(userName);
+  console.log(greeting);
+  
+  const num1 = 5;
+  const num2 = 10;
+  const sum = add(num1, num2);
+  console.log();
+}
+
+// Export functions for use in other files
+module.exports = {
+  greetUser,
+  add,
+  runExample
+};</pre>
+
+        <h3>test.js</h3>
+        <pre>/**
+ * Test file for index.js functions
+ * 
+ * This file contains simple tests for the functions defined in index.js.
+ */
+
+const { greetUser, add } = require('./index');
+
+// Test greetUser function
+console.log('Testing greetUser function:');
+const greeting = greetUser('Tester');
+const expectedGreeting = 'Hello, Tester! Welcome to the Test Repository.';
+console.log();
+console.log();
+console.log();
+
+// Test add function
+console.log('Testing add function:');
+const sum = add(3, 7);
+const expectedSum = 10;
+console.log();
+console.log();
+console.log();
+
+console.log('All tests completed.');</pre>
+    </div>
+
+    <footer>
+        <p>© 2025 KateLeonovaQA - MIT License</p>
+    </footer>
+</body>
+</html>
