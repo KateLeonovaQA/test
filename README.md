@@ -29,7 +29,7 @@ cd test
 
 ### Switch to the Working Branch
 ```bash
-git checkout one-moreteeeeeesssssttttttttttttttttttttttttttttttttttttttt11111111111
+git checkout main
 ```
 
 ## 🤝 Contributing
@@ -51,7 +51,7 @@ git checkout one-moreteeeeeesssssttttttttttttttttttttttttttttttttttttttt11111111
 ## 📊 Branches Overview
 
 - **main**: Primary branch for stable code
-- **one-moreteeeeeesssssttttttttttttttttttttttttttttttttttttttt11111111111**: Current experimental branch (you are here!)
+- **add-readme**: Branch for README updates (you are here!)
 - **test1, test43, tesy2, iiii**: Additional test branches for various experiments
 
 ## 📞 Contact & Support
@@ -66,7 +66,7 @@ This project is open source and available under the [MIT License](LICENSE).
 
 ---
 
-*Last updated: September 5, 2025*
+*Last updated: September 11, 2025*
 
 ## Repository Structure
 
@@ -127,13 +127,23 @@ The website includes:
 - **Documentation**: Details about the documentation files
 - **Sample Code**: Showcase of the sample JavaScript code
 
-To enable GitHub Pages for this repository:
-1. Go to the repository on GitHub
-2. Click on &quot;Settings&quot;
-3. Scroll down to the &quot;GitHub Pages&quot; section
-4. Under &quot;Source&quot;, select &quot;main branch&quot; and &quot;/docs&quot; folder
-5. Click &quot;Save&quot;
+## Test Section (Added September 11, 2025)
 
+This section was added as a test to demonstrate GitHub workflow capabilities:
+
+- Creating branches
+- Modifying files
+- Committing changes
+- Creating pull requests
+- Merging changes
+
+### Test Features
+
+- [x] Branch creation
+- [x] File modification
+- [ ] Pull request creation
+- [ ] Code review
+- [ ] Branch merging
 
 ## Repository Status
 
@@ -146,5 +156,4 @@ This repository is actively maintained and follows all best practices for open-s
 - Sample code
 - GitHub Pages website
 
-Last updated: September 10, 2025
-
+Last updated: September 11, 2025
