@@ -10,17 +10,16 @@ const { greetUser, add } = require('./index');
 console.log('Testing greetUser function:');
 const greeting = greetUser('Tester');
 const expectedGreeting = 'Hello, Tester! Welcome to the Test Repository.';
-console.log();
-console.log();
-console.log();
+console.log(`Actual: "${greeting}"`);
+console.log(`Expected: "${expectedGreeting}"`);
+console.log(`Test ${greeting === expectedGreeting ? 'PASSED' : 'FAILED'}`);
 
 // Test add function
-console.log('Testing add function:');
+console.log('\nTesting add function:');
 const sum = add(3, 7);
 const expectedSum = 10;
-console.log();
-console.log();
-console.log();
+console.log(`Actual: ${sum}`);
+console.log(`Expected: ${expectedSum}`);
+console.log(`Test ${sum === expectedSum ? 'PASSED' : 'FAILED'}`);
 
-console.log('All tests completed.');
-
+console.log('\nAll tests completed.');
