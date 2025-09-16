@@ -1,26 +1,25 @@
 {
-  &quot;name&quot;: &quot;test-repository&quot;,
-  &quot;version&quot;: &quot;1.0.0&quot;,
-  &quot;description&quot;: &quot;A test repository for demonstration purposes&quot;,
-  &quot;main&quot;: &quot;src/index.js&quot;,
-  &quot;scripts&quot;: {
-    &quot;start&quot;: &quot;node src/index.js&quot;,
-    &quot;test&quot;: &quot;node src/test.js&quot;
+  "name": "test-repository",
+  "version": "1.0.0",
+  "description": "A test repository for demonstration purposes",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node src/test.js"
   },
-  &quot;repository&quot;: {
-    &quot;type&quot;: &quot;git&quot;,
-    &quot;url&quot;: &quot;git+https://github.com/KateLeonovaQA/test.git&quot;
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KateLeonovaQA/test.git"
   },
-  &quot;keywords&quot;: [
-    &quot;test&quot;,
-    &quot;demo&quot;,
-    &quot;example&quot;
+  "keywords": [
+    "test",
+    "demo",
+    "example"
   ],
-  &quot;author&quot;: &quot;KateLeonovaQA&quot;,
-  &quot;license&quot;: &quot;MIT&quot;,
-  &quot;bugs&quot;: {
-    &quot;url&quot;: &quot;https://github.com/KateLeonovaQA/test/issues&quot;
+  "author": "KateLeonovaQA",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/KateLeonovaQA/test/issues"
   },
-  &quot;homepage&quot;: &quot;https://github.com/KateLeonovaQA/test#readme&quot;
+  "homepage": "https://github.com/KateLeonovaQA/test#readme"
 }
-

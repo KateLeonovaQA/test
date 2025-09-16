@@ -7,7 +7,7 @@
 
 // Simple function to greet a user
 function greetUser(name) {
-  return ;
+  return `Hello, ${name}! Welcome to the Test Repository.`;
 }
 
 // Function to calculate the sum of two numbers
@@ -24,7 +24,7 @@ function runExample() {
   const num1 = 5;
   const num2 = 10;
   const sum = add(num1, num2);
-  console.log();
+  console.log(`The sum of ${num1} and ${num2} is ${sum}`);
 }
 
 // Export functions for use in other files
@@ -33,4 +33,3 @@ module.exports = {
   add,
   runExample
 };
-
