@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>🐍 Snake Game</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐍</text></svg>">
+<script src="https://sites.super.gammamyninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+    <div class="game-container">
+        <!-- Header -->
+        <div class="game-header">
+            <div class="game-title">🐍 Snake</div>
+            <div class="score-board">
+                <div class="score-item">
+                    <span class="score-label">Score</span>
+                    <span class="score-value" id="score">0</span>
+                </div>
+                <div class="score-item">
+                    <span class="score-label">Best</span>
+                    <span class="score-value high-score" id="highScore">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Canvas -->
+        <div class="canvas-wrapper">
+            <canvas id="gameCanvas"></canvas>
+
+            <!-- Start Overlay -->
+            <div class="overlay" id="startOverlay">
+                <div class="overlay-title start">Snake</div>
+                <div class="overlay-subtitle">Eat food. Grow longer. Don't crash!</div>
+                <br>
+                <button class="btn btn-play" id="startBtn">▶ Play</button>
+            </div>
+
+            <!-- Game Over Overlay -->
+            <div class="overlay hidden" id="gameOverOverlay">
+                <div class="overlay-title gameover">Game Over</div>
+                <div class="overlay-score" id="gameOverScore">Score: 0</div>
+                <button class="btn btn-restart" id="restartBtn">↻ Play Again</button>
+            </div>
+        </div>
+
+        <!-- Keyboard Controls Info -->
+        <div class="controls-info">
+            <div class="control-group">
+                <span class="key">↑</span>
+                <span class="key">↓</span>
+                <span class="key">←</span>
+                <span class="key">→</span>
+                <span>or</span>
+                <span class="key">W</span>
+                <span class="key">A</span>
+                <span class="key">S</span>
+                <span class="key">D</span>
+                <span>Move</span>
+            </div>
+            <div class="control-group">
+                <span class="key">Space</span>
+                <span>Pause</span>
+            </div>
+        </div>
+
+        <!-- Mobile Controls -->
+        <div class="mobile-controls">
+            <div class="mobile-btn up" id="btnUp">▲</div>
+            <div class="mobile-btn left" id="btnLeft">◀</div>
+            <div class="mobile-btn down" id="btnDown">▼</div>
+            <div class="mobile-btn right" id="btnRight">▶</div>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
