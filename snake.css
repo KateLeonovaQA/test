@@ -322,10 +322,4 @@ body::before {
     .score-box      { min-width: 75px; padding: 6px 12px; }
 }
 
-/* Particle effect canvas */
-#particleCanvas {
-    position: fixed;
-    top: 0; left: 0;
-    pointer-events: none;
-    z-index: 0;
-}
+/* Note: particles are rendered directly on #gameCanvas — no separate particle canvas needed */

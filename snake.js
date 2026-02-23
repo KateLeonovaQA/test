@@ -42,6 +42,7 @@ let gameLoop, gameRunning, gamePaused;
 let bonusTimer, bonusActive;
 let particles = [];
 let frameCount = 0;
+let lastBonusMilestone = -1; // tracks last score milestone that triggered bonus
 
 // ─── DOM Elements ─────────────────────────────────────────────────────────────
 const canvas        = document.getElementById('gameCanvas');
@@ -69,10 +70,11 @@ function initGame() {
     score         = 0;
     level         = 0;
     levelLabel    = SPEED_LEVELS[0].label;
-    bonusActive   = false;
-    bonusFood     = null;
-    particles     = [];
-    frameCount    = 0;
+    bonusActive        = false;
+    bonusFood          = null;
+    particles          = [];
+    frameCount         = 0;
+    lastBonusMilestone = -1;
 
     highScore = parseInt(localStorage.getItem('snakeHighScore') || '0');
 
@@ -82,13 +84,16 @@ function initGame() {
 
 // ─── Food Spawning ────────────────────────────────────────────────────────────
 function spawnFood() {
-    food = randomEmptyCell();
+    const cell = randomEmptyCell();
+    if (cell) food = cell;
 }
 
 function spawnBonusFood() {
     if (bonusActive) return;
+    const cell = randomEmptyCell();
+    if (!cell) return; // No empty cell available
     bonusActive = true;
-    bonusFood   = randomEmptyCell();
+    bonusFood   = cell;
 
     // Bonus disappears after 7 seconds
     clearTimeout(bonusTimer);
@@ -100,11 +105,18 @@ function spawnBonusFood() {
 
 function randomEmptyCell() {
     let cell;
+    let attempts = 0;
+    const maxAttempts = GRID_SIZE * GRID_SIZE;
     do {
         cell = {
             x: Math.floor(Math.random() * GRID_SIZE),
             y: Math.floor(Math.random() * GRID_SIZE),
         };
+        attempts++;
+        if (attempts > maxAttempts) {
+            // Grid is full — return null to signal no space available
+            return null;
+        }
     } while (
         snake.some(s => s.x === cell.x && s.y === cell.y) ||
         (food && food.x === cell.x && food.y === cell.y)
@@ -161,8 +173,11 @@ function tick() {
                        head.y * CELL_SIZE + CELL_SIZE / 2,
                        COLORS.food, 12);
 
-        // Spawn bonus every 5 foods
-        if (score % 50 === 0) spawnBonusFood();
+        // Spawn bonus every 5 foods (track last milestone to avoid re-trigger)
+        if (score % 50 === 0 && score !== lastBonusMilestone) {
+            lastBonusMilestone = score;
+            spawnBonusFood();
+        }
 
         // Re-schedule if speed changed
         const newSpeed = SPEED_LEVELS.filter(l => score >= l.threshold).pop();
@@ -180,6 +195,10 @@ function tick() {
         spawnParticles(head.x * CELL_SIZE + CELL_SIZE / 2,
                        head.y * CELL_SIZE + CELL_SIZE / 2,
                        COLORS.bonus, 20);
+
+        // Re-schedule loop one threshold at a time to avoid skipping levels
+        const newSpeed = SPEED_LEVELS.filter(l => score >= l.threshold).pop();
+        if (SPEED_LEVELS.indexOf(newSpeed) !== level) scheduleLoop();
     }
 
     if (!ate) snake.pop();
@@ -437,7 +456,33 @@ document.addEventListener('keydown', e => {
 function togglePause() {
     if (!gameRunning) return;
     gamePaused = !gamePaused;
-    if (!gamePaused) draw();
+    if (gamePaused) {
+        drawPauseOverlay();
+    } else {
+        draw();
+    }
+}
+
+function drawPauseOverlay() {
+    // Draw the current game state underneath
+    draw();
+    // Semi-transparent dark overlay
+    ctx.fillStyle = 'rgba(10, 10, 26, 0.75)';
+    ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+    // PAUSED text
+    ctx.shadowColor = 'rgba(0, 255, 128, 0.8)';
+    ctx.shadowBlur  = 20;
+    ctx.fillStyle   = '#00ff80';
+    ctx.font        = 'bold 48px "Segoe UI", Tahoma, sans-serif';
+    ctx.textAlign   = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('⏸ PAUSED', CANVAS_SIZE / 2, CANVAS_SIZE / 2);
+    // Sub-text
+    ctx.shadowBlur  = 0;
+    ctx.fillStyle   = 'rgba(255, 255, 255, 0.45)';
+    ctx.font        = '16px "Segoe UI", Tahoma, sans-serif';
+    ctx.fillText('Press P or ESC to resume', CANVAS_SIZE / 2, CANVAS_SIZE / 2 + 50);
+    ctx.textBaseline = 'alphabetic';
 }
 
 // Touch / swipe support
