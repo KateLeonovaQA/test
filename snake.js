@@ -14,6 +14,13 @@ const DIRECTIONS = {
     d: { x: 1,  y:  0 },
 };
 
+const POWER_UP_TYPES = {
+    SPEED:     { color: '#ff6b6b', symbol: '⚡', duration: 5000,  effect: 'speed' },
+    SLOW:      { color: '#4ecdc4', symbol: '🐢', duration: 5000,  effect: 'slow' },
+    INVINCIBLE:{ color: '#ffe66d', symbol: '🛡️', duration: 4000,  effect: 'invincible' },
+    DOUBLE:    { color: '#ff9ff3', symbol: '✨', duration: 8000,  effect: 'double' },
+};
+
 const SPEED_LEVELS = [
     { threshold: 0,  interval: 160, label: 'Easy'   },
     { threshold: 5,  interval: 130, label: 'Normal'  },
@@ -31,6 +38,8 @@ const COLORS = {
     foodGlow:    'rgba(255, 68, 102, 0.6)',
     bonus:       '#ffd700',
     bonusGlow:   'rgba(255, 215, 0, 0.6)',
+    obstacle:    '#ff4757',
+    obstacleGlow:'rgba(255, 71, 87, 0.5)',
     grid:        'rgba(255, 255, 255, 0.03)',
     bg:          '#0d1117',
 };
@@ -42,6 +51,13 @@ let gameLoop, gameRunning, gamePaused;
 let bonusTimer, bonusActive;
 let particles = [];
 let frameCount = 0;
+let obstacles = [];
+let powerUp = null;
+let powerUpTimer = null;
+let activePowerUp = null;
+let screenShake = 0;
+let comboCount = 0;
+let comboTimer = null;
 
 // ─── DOM Elements ─────────────────────────────────────────────────────────────
 const canvas        = document.getElementById('gameCanvas');
@@ -53,6 +69,7 @@ const startOverlay  = document.getElementById('startOverlay');
 const gameOverOverlay = document.getElementById('gameOverOverlay');
 const finalScoreEl  = document.getElementById('finalScore');
 const finalBestEl   = document.getElementById('finalBest');
+const powerupIndicator = document.getElementById('powerupIndicator');
 
 canvas.width  = CANVAS_SIZE;
 canvas.height = CANVAS_SIZE;
@@ -73,11 +90,20 @@ function initGame() {
     bonusFood     = null;
     particles     = [];
     frameCount    = 0;
+    obstacles     = [];
+    powerUp       = null;
+    activePowerUp = null;
+    screenShake   = 0;
+    comboCount    = 0;
+
+    clearTimeout(powerUpTimer);
+    clearTimeout(comboTimer);
 
     highScore = parseInt(localStorage.getItem('snakeHighScore') || '0');
 
     updateScoreDisplay();
     spawnFood();
+    spawnObstacles();
 }
 
 // ─── Food Spawning ────────────────────────────────────────────────────────────
@@ -107,9 +133,90 @@ function randomEmptyCell() {
         };
     } while (
         snake.some(s => s.x === cell.x && s.y === cell.y) ||
-        (food && food.x === cell.x && food.y === cell.y)
+        (food && food.x === cell.x && food.y === cell.y) ||
+        (bonusFood && bonusFood.x === cell.x && bonusFood.y === cell.y) ||
+        (powerUp && powerUp.x === cell.x && powerUp.y === cell.y) ||
+        obstacles.some(o => o.x === cell.x && o.y === cell.y)
     );
     return cell;
+}
+
+function spawnObstacles() {
+    obstacles = [];
+    const obstacleCount = Math.min(Math.floor(score / 100) + 2, 8);
+    
+    for (let i = 0; i < obstacleCount; i++) {
+        let obstacle;
+        do {
+            obstacle = {
+                x: Math.floor(Math.random() * GRID_SIZE),
+                y: Math.floor(Math.random() * GRID_SIZE),
+            };
+        } while (
+            snake.some(s => s.x === obstacle.x && s.y === obstacle.y) ||
+            (obstacle.x >= 8 && obstacle.x <= 12 && obstacle.y >= 8 && obstacle.y <= 12) ||
+            obstacles.some(o => o.x === obstacle.x && o.y === obstacle.y)
+        );
+        obstacles.push(obstacle);
+    }
+}
+
+function spawnPowerUp() {
+    if (powerUp || Math.random() > 0.3) return;
+    
+    const types = Object.keys(POWER_UP_TYPES);
+    const type = types[Math.floor(Math.random() * types.length)];
+    
+    powerUp = {
+        ...randomEmptyCell(),
+        type: type,
+        ...POWER_UP_TYPES[type]
+    };
+    
+    // Power-up disappears after 8 seconds
+    clearTimeout(powerUpTimer);
+    powerUpTimer = setTimeout(() => {
+        powerUp = null;
+    }, 8000);
+}
+
+function activatePowerUp(type) {
+    clearTimeout(powerUpTimer);
+    activePowerUp = type;
+    
+    const powerUpData = POWER_UP_TYPES[type];
+    
+    // Show power-up indicator
+    const indicator = document.getElementById('powerupIndicator');
+    const icon = document.getElementById('powerupIcon');
+    const name = document.getElementById('powerupName');
+    
+    indicator.classList.remove('hidden');
+    icon.textContent = powerUpData.symbol;
+    name.textContent = powerUpData.effect.charAt(0).toUpperCase() + powerUpData.effect.slice(1);
+    
+    // Apply effect
+    switch(powerUpData.effect) {
+        case 'speed':
+            scheduleLoop();
+            break;
+        case 'slow':
+            scheduleLoop();
+            break;
+        case 'invincible':
+            // Invincibility handled in collision detection
+            break;
+        case 'double':
+            // Double points handled in score calculation
+            break;
+    }
+    
+    // Deactivate after duration
+    setTimeout(() => {
+        activePowerUp = null;
+        indicator.classList.add('hidden');
+        scheduleLoop(); // Reset speed
+    }, powerUpData.duration);
 }
 
 // ─── Game Loop ────────────────────────────────────────────────────────────────
@@ -123,9 +230,17 @@ function startGame() {
 
 function scheduleLoop() {
     clearInterval(gameLoop);
-    const speed = SPEED_LEVELS.filter(l => score >= l.threshold).pop();
-    level      = SPEED_LEVELS.indexOf(speed);
-    levelLabel = speed.label;
+    let speed = SPEED_LEVELS.filter(l => score >= l.threshold).pop();
+    
+    // Apply power-up speed modifiers
+    if (activePowerUp === 'SPEED') {
+        speed = { ...speed, interval: Math.max(speed.interval * 0.6, 30) };
+    } else if (activePowerUp === 'SLOW') {
+        speed = { ...speed, interval: Math.min(speed.interval * 1.5, 200) };
+    }
+    
+    level      = SPEED_LEVELS.indexOf(SPEED_LEVELS.filter(l => score >= l.threshold).pop());
+    levelLabel = SPEED_LEVELS[level].label;
     levelEl.textContent = levelLabel;
     gameLoop = setInterval(tick, speed.interval);
 }
@@ -142,8 +257,15 @@ function tick() {
         y: (snake[0].y + direction.y + GRID_SIZE) % GRID_SIZE,
     };
 
-    // Collision with self
-    if (snake.some(s => s.x === head.x && s.y === head.y)) {
+    // Collision with self (unless invincible)
+    if (activePowerUp !== 'INVINCIBLE' && snake.some(s => s.x === head.x && s.y === head.y)) {
+        endGame();
+        return;
+    }
+
+    // Collision with obstacles (unless invincible)
+    if (activePowerUp !== 'INVINCIBLE' && obstacles.some(o => o.x === head.x && o.y === head.y)) {
+        screenShake = 10;
         endGame();
         return;
     }
@@ -153,7 +275,10 @@ function tick() {
     // Check food
     let ate = false;
     if (head.x === food.x && head.y === food.y) {
-        score += 10;
+        let points = 10;
+        if (activePowerUp === 'DOUBLE') points *= 2;
+        
+        score += points;
         ate = true;
         spawnFood();
         popScore();
@@ -161,17 +286,31 @@ function tick() {
                        head.y * CELL_SIZE + CELL_SIZE / 2,
                        COLORS.food, 12);
 
+        // Combo system
+        comboCount++;
+        clearTimeout(comboTimer);
+        comboTimer = setTimeout(() => { comboCount = 0; }, 3000);
+
         // Spawn bonus every 5 foods
         if (score % 50 === 0) spawnBonusFood();
+
+        // Spawn power-up occasionally
+        if (Math.random() < 0.25) spawnPowerUp();
 
         // Re-schedule if speed changed
         const newSpeed = SPEED_LEVELS.filter(l => score >= l.threshold).pop();
         if (SPEED_LEVELS.indexOf(newSpeed) !== level) scheduleLoop();
+        
+        // Spawn more obstacles at higher scores
+        if (score % 100 === 0) spawnObstacles();
     }
 
     // Check bonus food
     if (bonusActive && bonusFood && head.x === bonusFood.x && head.y === bonusFood.y) {
-        score += 50;
+        let points = 50;
+        if (activePowerUp === 'DOUBLE') points *= 2;
+        
+        score += points;
         ate = true;
         bonusActive = false;
         bonusFood   = null;
@@ -182,6 +321,15 @@ function tick() {
                        COLORS.bonus, 20);
     }
 
+    // Check power-up
+    if (powerUp && head.x === powerUp.x && head.y === powerUp.y) {
+        activatePowerUp(powerUp.type);
+        spawnParticles(head.x * CELL_SIZE + CELL_SIZE / 2,
+                       head.y * CELL_SIZE + CELL_SIZE / 2,
+                       powerUp.color, 15);
+        powerUp = null;
+    }
+
     if (!ate) snake.pop();
 
     updateScoreDisplay();
@@ -190,15 +338,34 @@ function tick() {
 
 // ─── Drawing ──────────────────────────────────────────────────────────────────
 function draw() {
+    // Apply screen shake
+    ctx.save();
+    if (screenShake > 0) {
+        const shakeX = (Math.random() - 0.5) * screenShake;
+        const shakeY = (Math.random() - 0.5) * screenShake;
+        ctx.translate(shakeX, shakeY);
+        screenShake *= 0.9;
+        if (screenShake < 0.5) screenShake = 0;
+    }
+
     // Background
     ctx.fillStyle = COLORS.bg;
     ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
 
     drawGrid();
     updateParticles();
+    drawObstacles();
     drawFood();
     if (bonusActive && bonusFood) drawBonusFood();
+    if (powerUp) drawPowerUp();
     drawSnake();
+    
+    // Draw combo counter
+    if (comboCount > 1) {
+        drawCombo();
+    }
+    
+    ctx.restore();
 }
 
 function drawGrid() {
@@ -225,8 +392,8 @@ function drawSnake() {
 
         // Glow for head
         if (i === 0) {
-            ctx.shadowColor = COLORS.snakeGlow;
-            ctx.shadowBlur  = 15;
+            ctx.shadowColor = activePowerUp === 'INVINCIBLE' ? COLORS.bonus : COLORS.snakeGlow;
+            ctx.shadowBlur  = activePowerUp === 'INVINCIBLE' ? 25 : 15;
         } else {
             ctx.shadowBlur = 0;
         }
@@ -236,7 +403,14 @@ function drawSnake() {
         const r = Math.round(0   + t * 0);
         const g = Math.round(255 - t * 100);
         const b = Math.round(128 - t * 80);
-        ctx.fillStyle = i === 0 ? COLORS.snakeHead : `rgb(${r},${g},${b})`;
+        
+        // Change color when invincible
+        if (activePowerUp === 'INVINCIBLE') {
+            const hue = (frameCount * 5) % 360;
+            ctx.fillStyle = i === 0 ? `hsl(${hue}, 100%, 60%)` : `hsl(${hue}, 80%, 50%)`;
+        } else {
+            ctx.fillStyle = i === 0 ? COLORS.snakeHead : `rgb(${r},${g},${b})`;
+        }
 
         roundRect(ctx, x + pad, y + pad, CELL_SIZE - pad * 2, CELL_SIZE - pad * 2, radius);
         ctx.fill();
@@ -320,6 +494,68 @@ function drawBonusFood() {
     ctx.fillText('★', cx, cy + 1);
 }
 
+function drawObstacles() {
+    obstacles.forEach(obs => {
+        const x = obs.x * CELL_SIZE;
+        const y = obs.y * CELL_SIZE;
+        const pad = 2;
+        
+        ctx.shadowColor = COLORS.obstacleGlow;
+        ctx.shadowBlur  = 10;
+        ctx.fillStyle   = COLORS.obstacle;
+        
+        // Draw X shape
+        ctx.beginPath();
+        ctx.moveTo(x + pad, y + pad);
+        ctx.lineTo(x + CELL_SIZE - pad, y + CELL_SIZE - pad);
+        ctx.moveTo(x + CELL_SIZE - pad, y + pad);
+        ctx.lineTo(x + pad, y + CELL_SIZE - pad);
+        ctx.strokeStyle = COLORS.obstacle;
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        
+        ctx.shadowBlur = 0;
+    });
+}
+
+function drawPowerUp() {
+    const pulse = 0.9 + 0.1 * Math.sin(frameCount * 0.15);
+    const cx = powerUp.x * CELL_SIZE + CELL_SIZE / 2;
+    const cy = powerUp.y * CELL_SIZE + CELL_SIZE / 2;
+    const r  = (CELL_SIZE / 2 - 2) * pulse;
+
+    // Glow
+    ctx.shadowColor = powerUp.color;
+    ctx.shadowBlur  = 20;
+    ctx.fillStyle   = powerUp.color;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Symbol
+    ctx.shadowBlur  = 0;
+    ctx.fillStyle   = 'rgba(0,0,0,0.6)';
+    ctx.font        = `bold ${Math.floor(r * 1.1)}px Arial`;
+    ctx.textAlign   = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(powerUp.symbol, cx, cy + 1);
+}
+
+function drawCombo() {
+    const text = `${comboCount}x COMBO!`;
+    ctx.font        = 'bold 20px Arial';
+    ctx.textAlign   = 'center';
+    ctx.textBaseline = 'top';
+    
+    // Glow effect
+    ctx.shadowColor = COLORS.bonus;
+    ctx.shadowBlur  = 15;
+    ctx.fillStyle   = COLORS.bonus;
+    ctx.fillText(text, CANVAS_SIZE / 2, 10);
+    
+    ctx.shadowBlur = 0;
+}
+
 // ─── Particles ────────────────────────────────────────────────────────────────
 function spawnParticles(x, y, color, count) {
     for (let i = 0; i < count; i++) {
@@ -395,6 +631,8 @@ function endGame() {
     gameRunning = false;
     clearInterval(gameLoop);
     clearTimeout(bonusTimer);
+    clearTimeout(powerUpTimer);
+    clearTimeout(comboTimer);
 
     if (score > highScore) {
         highScore = score;
@@ -403,8 +641,12 @@ function endGame() {
 
     finalScoreEl.textContent = score;
     finalBestEl.textContent  = highScore;
+    
+    // Hide power-up indicator
+    powerupIndicator.classList.add('hidden');
 
     // Flash effect
+    screenShake = 15;
     spawnParticles(CANVAS_SIZE / 2, CANVAS_SIZE / 2, COLORS.food, 30);
     draw();
 

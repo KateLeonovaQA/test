@@ -34,6 +34,12 @@
         Level: <strong id="levelLabel">Easy</strong>
     </div>
 
+    <!-- Power-up Indicator -->
+    <div class="powerup-indicator hidden" id="powerupIndicator">
+        <span id="powerupIcon">⚡</span>
+        <span id="powerupName">Speed Boost</span>
+    </div>
+
     <!-- Game Canvas -->
     <div class="canvas-container">
         <canvas id="gameCanvas"></canvas>
@@ -44,6 +50,7 @@
             <div class="overlay-title green">Snake</div>
             <div class="overlay-subtitle">Use arrow keys or WASD to move</div>
             <div class="overlay-subtitle">Eat 🔴 food to grow &nbsp;|&nbsp; Catch ⭐ bonus for +50pts</div>
+            <div class="overlay-subtitle">Collect ⚡ power-ups for special abilities!</div>
             <button class="btn btn-primary" onclick="startGame()">▶ &nbsp; Start Game</button>
         </div>
 
