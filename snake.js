@@ -1,4 +1,4 @@
-// ─── Constants ───────────────────────────────────────────────────────────────
+// ─── Constants ────────────────────────────────────────────────────────────────
 const GRID_SIZE   = 20;   // cells
 const CELL_SIZE   = 25;   // px per cell
 const CANVAS_SIZE = GRID_SIZE * CELL_SIZE; // 500px
@@ -44,7 +44,133 @@ const COLORS = {
     bg:          '#0d1117',
 };
 
-// ─── Game State ───────────────────────────────────────────────────────────────
+// ─── Sound System ───────────────────────────────────────────────────────────
+const SoundSystem = {
+    audioContext: null,
+    enabled: true,
+    
+    init() {
+        if (!this.audioContext) {
+            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+    },
+    
+    playTone(frequency, duration, type = 'sine', volume = 0.3) {
+        if (!this.enabled || !this.audioContext) return;
+        
+        try {
+            const oscillator = this.audioContext.createOscillator();
+            const gainNode = this.audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(this.audioContext.destination);
+            
+            oscillator.frequency.value = frequency;
+            oscillator.type = type;
+            
+            gainNode.gain.setValueAtTime(volume, this.audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + duration);
+            
+            oscillator.start(this.audioContext.currentTime);
+            oscillator.stop(this.audioContext.currentTime + duration);
+        } catch (e) {
+            // Silently fail if audio context not ready
+        }
+    },
+    
+    playEat() {
+        this.playTone(600, 0.1, 'sine', 0.2);
+        setTimeout(() => this.playTone(800, 0.1, 'sine', 0.2), 50);
+    },
+    
+    playBonus() {
+        this.playTone(400, 0.1, 'sine', 0.25);
+        setTimeout(() => this.playTone(600, 0.1, 'sine', 0.25), 80);
+        setTimeout(() => this.playTone(800, 0.15, 'sine', 0.25), 160);
+    },
+    
+    playPowerUp() {
+        this.playTone(300, 0.15, 'sine', 0.3);
+        setTimeout(() => this.playTone(500, 0.15, 'sine', 0.3), 100);
+        setTimeout(() => this.playTone(700, 0.2, 'sine', 0.3), 200);
+    },
+    
+    playGameOver() {
+        this.playTone(400, 0.3, 'sine', 0.4);
+        setTimeout(() => this.playTone(300, 0.3, 'sine', 0.4), 200);
+        setTimeout(() => this.playTone(200, 0.5, 'sine', 0.4), 400);
+    },
+    
+    playPause() {
+        this.playTone(500, 0.1, 'sine', 0.2);
+    },
+    
+    toggle() {
+        this.enabled = !this.enabled;
+        return this.enabled;
+    }
+};
+
+// ─── Game Statistics ───────────────────────────────────────────────────────
+const GameStats = {
+    gamesPlayed: 0,
+    totalScore: 0,
+    bestScore: 0,
+    averageScore: 0,
+    
+    init() {
+        const saved = localStorage.getItem('snakeGameStats');
+        if (saved) {
+            const stats = JSON.parse(saved);
+            this.gamesPlayed = stats.gamesPlayed || 0;
+            this.totalScore = stats.totalScore || 0;
+            this.bestScore = stats.bestScore || 0;
+            this.averageScore = stats.averageScore || 0;
+        }
+    },
+    
+    update(score) {
+        this.gamesPlayed++;
+        this.totalScore += score;
+        if (score > this.bestScore) {
+            this.bestScore = score;
+        }
+        this.averageScore = Math.round(this.totalScore / this.gamesPlayed);
+        this.save();
+    },
+    
+    save() {
+        localStorage.setItem('snakeGameStats', JSON.stringify({
+            gamesPlayed: this.gamesPlayed,
+            totalScore: this.totalScore,
+            bestScore: this.bestScore,
+            averageScore: this.averageScore
+        }));
+    },
+    
+    getDisplayHTML() {
+        return `
+            <div class="stats-row">
+                <span class="stat-label">Games Played</span>
+                <span class="stat-value">${this.gamesPlayed}</span>
+            </div>
+            <div class="stats-row">
+                <span class="stat-label">Total Score</span>
+                <span class="stat-value">${this.totalScore}</span>
+            </div>
+            <div class="stats-row">
+                <span class="stat-label">Average Score</span>
+                <span class="stat-value">${this.averageScore}</span>
+            </div>
+            <div class="stats-row">
+                <span class="stat-label">Best Score</span>
+                <span class="stat-value">${this.bestScore}</span>
+            </div>
+        `;
+    }
+};
+
+// ─── Game State ─────────────────────────────────────────────────────────────
 let snake, direction, nextDirection, food, bonusFood;
 let score, highScore, level, levelLabel;
 let gameLoop, gameRunning, gamePaused;
@@ -58,8 +184,9 @@ let activePowerUp = null;
 let screenShake = 0;
 let comboCount = 0;
 let comboTimer = null;
+let lastDirectionUpdate = 0; // Prevent rapid direction changes
 
-// ─── DOM Elements ─────────────────────────────────────────────────────────────
+// ─── DOM Elements ───────────────────────────────────────────────────────────
 const canvas        = document.getElementById('gameCanvas');
 const ctx           = canvas.getContext('2d');
 const scoreEl       = document.getElementById('score');
@@ -70,12 +197,18 @@ const gameOverOverlay = document.getElementById('gameOverOverlay');
 const finalScoreEl  = document.getElementById('finalScore');
 const finalBestEl   = document.getElementById('finalBest');
 const powerupIndicator = document.getElementById('powerupIndicator');
+const pauseOverlay  = document.getElementById('pauseOverlay');
+const gameStatsEl   = document.getElementById('gameStats');
+const soundToggle   = document.getElementById('soundToggle');
 
 canvas.width  = CANVAS_SIZE;
 canvas.height = CANVAS_SIZE;
 
-// ─── Initialization ───────────────────────────────────────────────────────────
+// ─── Initialization ─────────────────────────────────────────────────────────
 function initGame() {
+    SoundSystem.init();
+    GameStats.init();
+    
     snake = [
         { x: 10, y: 10 },
         { x: 9,  y: 10 },
@@ -95,6 +228,7 @@ function initGame() {
     activePowerUp = null;
     screenShake   = 0;
     comboCount    = 0;
+    lastDirectionUpdate = 0;
 
     clearTimeout(powerUpTimer);
     clearTimeout(comboTimer);
@@ -106,7 +240,7 @@ function initGame() {
     spawnObstacles();
 }
 
-// ─── Food Spawning ────────────────────────────────────────────────────────────
+// ─── Food Spawning ─────────────────────────────────────────────────────────
 function spawnFood() {
     food = randomEmptyCell();
 }
@@ -185,6 +319,7 @@ function activatePowerUp(type) {
     activePowerUp = type;
     
     const powerUpData = POWER_UP_TYPES[type];
+    SoundSystem.playPowerUp();
     
     // Show power-up indicator
     const indicator = document.getElementById('powerupIndicator');
@@ -219,7 +354,7 @@ function activatePowerUp(type) {
     }, powerUpData.duration);
 }
 
-// ─── Game Loop ────────────────────────────────────────────────────────────────
+// ─── Game Loop ─────────────────────────────────────────────────────────────
 function startGame() {
     initGame();
     hideOverlays();
@@ -281,6 +416,7 @@ function tick() {
         score += points;
         ate = true;
         spawnFood();
+        SoundSystem.playEat();
         popScore();
         spawnParticles(head.x * CELL_SIZE + CELL_SIZE / 2,
                        head.y * CELL_SIZE + CELL_SIZE / 2,
@@ -315,6 +451,7 @@ function tick() {
         bonusActive = false;
         bonusFood   = null;
         clearTimeout(bonusTimer);
+        SoundSystem.playBonus();
         popScore();
         spawnParticles(head.x * CELL_SIZE + CELL_SIZE / 2,
                        head.y * CELL_SIZE + CELL_SIZE / 2,
@@ -336,7 +473,7 @@ function tick() {
     draw();
 }
 
-// ─── Drawing ──────────────────────────────────────────────────────────────────
+// ─── Drawing ───────────────────────────────────────────────────────────────
 function draw() {
     // Apply screen shake
     ctx.save();
@@ -556,7 +693,7 @@ function drawCombo() {
     ctx.shadowBlur = 0;
 }
 
-// ─── Particles ────────────────────────────────────────────────────────────────
+// ─── Particles ─────────────────────────────────────────────────────────────
 function spawnParticles(x, y, color, count) {
     for (let i = 0; i < count; i++) {
         const angle = (Math.PI * 2 / count) * i + Math.random() * 0.5;
@@ -594,7 +731,7 @@ function updateParticles() {
     ctx.shadowBlur  = 0;
 }
 
-// ─── Utilities ────────────────────────────────────────────────────────────────
+// ─── Utilities ─────────────────────────────────────────────────────────────
 function roundRect(ctx, x, y, w, h, r) {
     ctx.beginPath();
     ctx.moveTo(x + r, y);
@@ -624,9 +761,10 @@ function popScore() {
 function hideOverlays() {
     startOverlay.classList.add('hidden');
     gameOverOverlay.classList.add('hidden');
+    pauseOverlay.classList.add('hidden');
 }
 
-// ─── Game Over ────────────────────────────────────────────────────────────────
+// ─── Game Over ─────────────────────────────────────────────────────────────
 function endGame() {
     gameRunning = false;
     clearInterval(gameLoop);
@@ -639,14 +777,23 @@ function endGame() {
         localStorage.setItem('snakeHighScore', highScore);
     }
 
+    // Update game statistics
+    GameStats.update(score);
+
     finalScoreEl.textContent = score;
     finalBestEl.textContent  = highScore;
+    
+    // Update statistics display
+    if (gameStatsEl) {
+        gameStatsEl.innerHTML = GameStats.getDisplayHTML();
+    }
     
     // Hide power-up indicator
     powerupIndicator.classList.add('hidden');
 
     // Flash effect
     screenShake = 15;
+    SoundSystem.playGameOver();
     spawnParticles(CANVAS_SIZE / 2, CANVAS_SIZE / 2, COLORS.food, 30);
     draw();
 
@@ -655,7 +802,7 @@ function endGame() {
     }, 400);
 }
 
-// ─── Input Handling ───────────────────────────────────────────────────────────
+// ─── Input Handling ───────────────────────────────────────────────────────
 document.addEventListener('keydown', e => {
     // Prevent page scroll
     if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key)) {
@@ -671,15 +818,27 @@ document.addEventListener('keydown', e => {
     const dir = DIRECTIONS[e.key];
     if (!dir) return;
 
-    // Prevent reversing
+    // Prevent reversing - with timing check
+    const now = Date.now();
+    if (now - lastDirectionUpdate < 50) return; // Prevent rapid changes
+    
     if (dir.x === -direction.x && dir.y === -direction.y) return;
     nextDirection = dir;
+    lastDirectionUpdate = now;
 });
 
 function togglePause() {
     if (!gameRunning) return;
+    
     gamePaused = !gamePaused;
-    if (!gamePaused) draw();
+    SoundSystem.playPause();
+    
+    if (gamePaused) {
+        pauseOverlay.classList.remove('hidden');
+    } else {
+        pauseOverlay.classList.add('hidden');
+        draw();
+    }
 }
 
 // Touch / swipe support
@@ -705,8 +864,13 @@ document.addEventListener('touchend', e => {
 function setDir(key) {
     const dir = DIRECTIONS[key];
     if (!dir) return;
+    
+    const now = Date.now();
+    if (now - lastDirectionUpdate < 50) return;
+    
     if (dir.x === -direction.x && dir.y === -direction.y) return;
     nextDirection = dir;
+    lastDirectionUpdate = now;
 }
 
 // On-screen touch buttons
@@ -718,7 +882,15 @@ document.querySelectorAll('.touch-btn').forEach(btn => {
     btn.addEventListener('click', () => setDir(btn.dataset.dir));
 });
 
-// ─── Boot ─────────────────────────────────────────────────────────────────────
+// Sound toggle
+if (soundToggle) {
+    soundToggle.addEventListener('click', () => {
+        const enabled = SoundSystem.toggle();
+        soundToggle.textContent = enabled ? '🔊' : '🔇';
+    });
+}
+
+// ─── Boot ─────────────────────────────────────────────────────────────────
 highScore = parseInt(localStorage.getItem('snakeHighScore') || '0');
 highScoreEl.textContent = highScore;
 

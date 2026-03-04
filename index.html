@@ -26,6 +26,7 @@
                 <div class="score-value" id="highScore">0</div>
             </div>
         </div>
+        <div class="sound-toggle" id="soundToggle" title="Toggle Sound">🔊</div>
     </div>
 
     <!-- Level Badge -->
@@ -64,7 +65,39 @@
             <div class="overlay-score">
                 Best: <span id="finalBest">0</span>
             </div>
-            <button class="btn btn-primary" onclick="startGame()">↺ &nbsp; Play Again</button>
+            
+            <!-- Game Statistics -->
+            <div class="stats-container">
+                <div class="stats-title">📊 Statistics</div>
+                <div class="stats-content" id="gameStats">
+                    <div class="stats-row">
+                        <span class="stat-label">Games Played</span>
+                        <span class="stat-value">0</span>
+                    </div>
+                    <div class="stats-row">
+                        <span class="stat-label">Total Score</span>
+                        <span class="stat-value">0</span>
+                    </div>
+                    <div class="stats-row">
+                        <span class="stat-label">Average Score</span>
+                        <span class="stat-value">0</span>
+                    </div>
+                    <div class="stats-row">
+                        <span class="stat-label">Best Score</span>
+                        <span class="stat-value">0</span>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="btn btn-primary" onclick="startGame()">🔄 &nbsp; Play Again</button>
+        </div>
+
+        <!-- Pause Overlay -->
+        <div class="overlay hidden" id="pauseOverlay">
+            <div class="overlay-icon">⏸️</div>
+            <div class="overlay-title yellow">Paused</div>
+            <div class="overlay-subtitle">Press P or ESC to resume</div>
+            <button class="btn btn-primary" onclick="togglePause()">▶ &nbsp; Resume</button>
         </div>
     </div>
 
