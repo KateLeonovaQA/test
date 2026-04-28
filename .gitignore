@@ -1,33 +1,22 @@
-# Ignore compiled files
-*.class
-*.o
-*.so
-*.dll
+# Runtime state files (not tracked)
+.orchestrator.lock
+.browser_server.pid
+.session_alert
 
-# Ignore logs and databases
+# Sensitive files
+settings.json
+.env*
+
+# Browser data
+phantom/browser_data/
+phantom/sessions/_tmp_cookies.db
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Logs
 *.log
-*.sql
-*.sqlite
 
-# Ignore OS generated files
+# OS
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# Ignore IDE files
-.idea/
-.vscode/
-*.swp
-*.swo
-
-# Ignore node modules
-node_modules/
-
-# Ignore build directories
-build/
-dist/
-
